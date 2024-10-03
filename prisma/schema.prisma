@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Kondisi {
+  RUSAK
+  BERFUNGSI
+  BELUM_BERFUNGSI
+}
+
+enum Penggunaan {
+  BELUM_DIGUNAKAN
+  SUDAH_DIGUNAKAN
+}
+
+model Petugas {
+  id             Int          @id @default(autoincrement())
+  nip       String   @unique @db.VarChar(255)
+  nama      String   @db.VarChar(255)
+  jabatan   String   @db.VarChar(255)
+  ttd       String?  @db.VarChar(255)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("petugas")
+}
+
+model Laboratorium {
+  id               Int          @id @default(autoincrement())
+  nama             String       @db.VarChar(255)
+  kapasitas        Int          @db.Integer
+  penanggung_jawab String       @db.VarChar(255)
+  Inventaris       Inventaris[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@map("laboratorium")
+}
+
+model SuratBebas {
+  id             Int          @id @default(autoincrement())
+  no_surat  String   @unique @db.VarChar(255)
+  nama      String   @db.VarChar(255)
+  nim       String   @db.VarChar(255)
+  judul     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("surat_bebas")
+}
+
+model SuratPenelitian {
+  id             Int          @id @default(autoincrement())
+  no_surat  String   @unique @db.VarChar(255)
+  nama      String   @db.VarChar(255)
+  nim       String   @db.VarChar(255)
+  judul     String   @db.Text
+  dospem    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("surat_penelitian")
+}
+
+model SuratPeminjaman {
+  id             Int          @id @default(autoincrement())
+  no_surat        String    @unique @db.VarChar(255)
+  nama            String    @db.VarChar(255)
+  nim             String    @db.VarChar(255)
+  no_hp           String    @db.VarChar(20)
+  tanggal_pinjam  DateTime  @default(now())
+  durasi          Int       @default(7) @db.Integer
+  tanggal_kembali DateTime?
+  alat            Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("surat_peminjaman")
+}
+
+model Inventaris {
+  id             Int          @id @default(autoincrement())
+  laboratoriumId Int
+  nama           String       @db.VarChar(255)
+  merk           String       @db.VarChar(255)
+  spesifikasi    String       @db.Text
+  jumlah         Int          @db.Integer
+  fungsi         String       @db.VarChar(255)
+  sumber         String       @db.VarChar(255)
+  tahun          Int          @db.Integer
+  kondisi        Kondisi
+  penggunaan     Penggunaan
+  keterangan     String?      @db.Text
+  Laboratorium   Laboratorium @relation(fields: [laboratoriumId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("inventaris")
+}
