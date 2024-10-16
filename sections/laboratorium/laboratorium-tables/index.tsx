@@ -11,7 +11,7 @@ import {
 } from './use-laboratorium-table-filters';
 import ky from 'ky';
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { DataTableResetFilter } from '@/components/ui/table/data-table-reset-filter';
 
 export default function LaboratoriumTable() {
@@ -62,6 +62,15 @@ export default function LaboratoriumTable() {
   }, [searchParams]);
   
   return (
+    <Suspense
+      fallback={
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton key={index} className="h-14 w-full" />
+          ))}
+        </div>
+      }
+    >
     <div className="space-y-4 ">
       <div className="flex flex-wrap items-center gap-4">
         <DataTableSearch
@@ -82,5 +91,6 @@ export default function LaboratoriumTable() {
         </div>)
           : <DataTable columns={columns(fetchData)} data={data} totalItems={dataLength} />}
     </div>
+    </Suspense>
   );
 }

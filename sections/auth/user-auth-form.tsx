@@ -1,5 +1,3 @@
-// app/components/UserAuthForm.tsx
-
 'use client';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,10 +8,11 @@ import {
   FormLabel,
   FormMessage
 } from '@/components/ui/form';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import ky from 'ky'
@@ -45,7 +44,7 @@ export default function UserAuthForm() {
   // Fungsi submit formulir
   const onSubmit = async (values: UserFormValue) => {
     startTransition(async () => {
-      setError(null); 
+      setError(null);
       try {
         const res = await ky.post('/api/auth/login', { json: values });
 
@@ -63,7 +62,15 @@ export default function UserAuthForm() {
   };
 
   return (
-    <>
+    <Suspense
+      fallback={
+        <div className="space-y-4">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <Skeleton key={index} className="h-14 w-full" />
+          ))}
+        </div>
+      }
+    >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-2">
           <FormField
@@ -108,6 +115,6 @@ export default function UserAuthForm() {
           </Button>
         </form>
       </Form>
-    </>
+    </Suspense>
   );
 }

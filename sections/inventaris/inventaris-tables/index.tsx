@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DataTable } from '@/components/ui/table/data-table';
@@ -6,10 +7,9 @@ import { InventarisWithLaboratorium } from '@/lib/data';
 import { columns } from './columns';
 import ky from 'ky';
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useInventarisTableFilters } from './use-inventaris-table-filters';
 import { DataTableResetFilter } from '@/components/ui/table/data-table-reset-filter';
-import { DataTableFilterBox } from '@/components/ui/table/data-table-filter-box';
 
 export default function InventarisTable() {
   const {
@@ -83,6 +83,15 @@ export default function InventarisTable() {
   }, []);
 
   return (
+    <Suspense
+      fallback={
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton key={index} className="h-14 w-full" />
+          ))}
+        </div>
+      }
+    >
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-4">
         <DataTableSearch
@@ -91,13 +100,6 @@ export default function InventarisTable() {
           setSearchQuery={setSearchQuery}
           setPage={setPage}
         />
-        {/* <DataTableFilterBox
-          filterKey="laboratoriumId"
-          title="Laboratorium"
-          options={LAB_OPTIONS}
-          setFilterValue={setLaboratoriumFilter}  // Menggunakan setLaboratoriumFilter
-          filterValue={laboratoriumFilter}  // Nilai filter yang dipilih
-        /> */}
         <DataTableResetFilter
           isFilterActive={isAnyFilterActive}
           onReset={resetFilters}
@@ -113,5 +115,6 @@ export default function InventarisTable() {
         <DataTable columns={columns(fetchData)} data={data} totalItems={dataLength} />
       )}
     </div>
+    </Suspense>
   );
 }

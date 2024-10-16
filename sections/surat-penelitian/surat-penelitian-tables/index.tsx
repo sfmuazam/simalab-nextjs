@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
@@ -6,7 +7,7 @@ import { DataTableSearch } from '@/components/ui/table/data-table-search';
 import { columns } from './columns';
 import ky from 'ky';
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { SuratPenelitian } from '@/lib/data';
 import { useSuratPenelitianTableFilters } from './use-surat-penelitian-table-filters';
 import { DataTableResetFilter } from '@/components/ui/table/data-table-reset-filter';
@@ -28,7 +29,6 @@ export default function SuratPenelitianTable() {
   const [data, setData] = useState<SuratPenelitian[]>([]);
   const [dataLength, setDataLength] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
- 
 
   const searchParams = useSearchParams();
   const page = searchParams.get('page') || '1';
@@ -39,8 +39,8 @@ export default function SuratPenelitianTable() {
     page,
     limit: pageLimit,
     ...(search && { search }),
-    ...(startDate && { startDate }),  // Tambahkan tanggal awal ke filter
-    ...(endDate && { endDate }),      // Tambahkan tanggal akhir ke filter
+    ...(startDate && { startDate }),
+    ...(endDate && { endDate }),
   };
 
   async function fetchData() {
@@ -67,48 +67,56 @@ export default function SuratPenelitianTable() {
   }, [searchParams]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-4">
-        <DataTableSearch
-          searchKey=""
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          setPage={setPage}
-        />
-        <div>
-          {/* <label htmlFor="startDate">Tanggal Awal:</label> */}
-          <Input
-            type="date"
-            id="startDate"
-            value={startDate}
-            onChange={(e: any) => setStartDate(e.target.value)}
-          />
-        </div>
-        -
-        <div>
-          {/* <label htmlFor="endDate">Tanggal Akhir:</label> */}
-          <Input
-            type="date"
-            id="endDate"
-            value={endDate}
-            onChange={(e: any) => setEndDate(e.target.value)}
-          />
-        </div>
-        
-        <DataTableResetFilter
-          isFilterActive={isAnyFilterActive}
-          onReset={resetFilters}
-        />
-      </div>
-      {isLoading ? (
+    <Suspense
+      fallback={
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, index) => (
             <Skeleton key={index} className="h-14 w-full" />
           ))}
         </div>
-      ) : (
-        <DataTable columns={columns(fetchData)} data={data} totalItems={dataLength} />
-      )}
-    </div>
+      }
+    >
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <DataTableSearch
+            searchKey=""
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            setPage={setPage}
+          />
+          <div>
+            <Input
+              type="date"
+              id="startDate"
+              value={startDate}
+              onChange={(e: any) => setStartDate(e.target.value)}
+            />
+          </div>
+          -
+          <div>
+            <Input
+              type="date"
+              id="endDate"
+              value={endDate}
+              onChange={(e: any) => setEndDate(e.target.value)}
+            />
+          </div>
+
+          <DataTableResetFilter
+            isFilterActive={isAnyFilterActive}
+            onReset={resetFilters}
+          />
+        </div>
+        {isLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className="h-14 w-full" />
+            ))}
+          </div>
+        ) : (
+          <DataTable columns={columns(fetchData)} data={data} totalItems={dataLength} />
+        )}
+      </div>
+    </Suspense>
   );
 }

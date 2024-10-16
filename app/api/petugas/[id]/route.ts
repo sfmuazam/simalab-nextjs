@@ -8,12 +8,6 @@ import path from 'path'
 const MAX_SIZE = 10 * 1024 * 1024; 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
 
-export const config = {
-  api: {
-    bodyParser: false, 
-  },
-};
-
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   
   const { id } = params

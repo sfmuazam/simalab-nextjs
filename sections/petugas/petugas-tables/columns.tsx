@@ -35,14 +35,14 @@ export const columns = (onRefresh: () => void): ColumnDef<Petugas>[] => [
     accessorKey: 'ttd',
     header: 'TANDA TANGAN',
     cell: ({ row }) => {
-      const ttdUrl = row.getValue('ttd');
-      
+      const ttdUrl = row.getValue('ttd') as string; // Ensure ttdUrl is treated as a string
+
       return (
         <div className="flex justify-center items-center relative w-16 h-16">
           {ttdUrl ? (
             <Image
               src={ttdUrl}
-              alt={row.getValue('nama')}
+              alt={row.getValue('nama') || 'Tanda Tangan'}
               fill
               className="rounded-lg self-center mx-auto"
             />
