@@ -3,6 +3,7 @@ import prisma from '../../../../../lib/prisma';
 import generateSuratWord from '@/lib/generate-surat'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params
   const suratPeminjaman = await prisma.suratPeminjaman.findUnique({
     where: { id: Number(id) }
@@ -16,29 +17,28 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }, { status: 404 })
   }
 
-  const formatTanggalIndonesia = (tanggal: Date | null) => {
-    if (!tanggal) return null;
-    return new Intl.DateTimeFormat('id-ID', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }).format(new Date(tanggal));
-  };
+  const formattedDatePinjam = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(suratPeminjaman.tanggal_pinjam));
+  const formattedDateKembali = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(suratPeminjaman.tanggal_kembali)) || null;
 
-  const tanggalPinjam = formatTanggalIndonesia(suratPeminjaman.tanggal_pinjam);
-  const tanggalKembali = formatTanggalIndonesia(suratPeminjaman.tanggal_kembali) || null;
+  let alatArray: any[] = [];
+  if (Array.isArray(suratPeminjaman.alat)) {
+    alatArray = suratPeminjaman.alat.map((item: any, index: number) => ({
+      ...item,
+      nomor: index + 1
+    }));
+  }
 
   try {
     const wordBuffer = await generateSuratWord('peminjaman', {
-      no_surat: suratPeminjaman.no_surat,
       nama: suratPeminjaman.nama,
       nim: suratPeminjaman.nim,
       no_hp: suratPeminjaman.no_hp,
-      tanggal_pinjam: tanggalPinjam,
+      keperluan: suratPeminjaman.keperluan,
+      tanggal_pinjam: formattedDatePinjam,
       durasi: suratPeminjaman.durasi,
-      tanggal_kembali: tanggalKembali,
-      alat: suratPeminjaman.alat
-    })
+      tanggal_kembali: formattedDateKembali,
+      alat: alatArray
+    });
 
     return new NextResponse(wordBuffer, {
       status: 200,

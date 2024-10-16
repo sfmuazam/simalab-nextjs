@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { laboratoriumSchema } from '@/lib/schema'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+
   const { id } = params
 
   try {
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+
   const { id } = params
   const body = await request.json()
   const data = laboratoriumSchema.parse(body)
@@ -74,6 +76,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params
 
   try {

@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { inventarisSchema } from '@/lib/schema'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+
   const { id } = params
 
   try {
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+
   const { id } = params
   const body = await request.json()
   const data = inventarisSchema.parse(body)
@@ -46,14 +48,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       data: {
         laboratoriumId: data.laboratoriumId,
         nama: data.nama,
-        merk: data.merk,
-        spesifikasi: data.spesifikasi,
-        jumlah: data.jumlah,
-        fungsi: data.fungsi,
-        sumber: data.sumber,
-        tahun: data.tahun,
-        kondisi: data.kondisi,
-        penggunaan: data.penggunaan,
+        merk: data.merk || null,
+        spesifikasi: data.spesifikasi || null,
+        jumlah: data.jumlah || 1,
+        fungsi: data.fungsi || null,
+        sumber: data.sumber || null,
+        tahun: data.tahun || new Date().getFullYear(),
+        kondisi: data.kondisi || "BERFUNGSI",
+        penggunaan: data.penggunaan || "BELUM_DIGUNAKAN",
         keterangan: data.keterangan || null
       }
     })
@@ -83,6 +85,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params
 
   try {

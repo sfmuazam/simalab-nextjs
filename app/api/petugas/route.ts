@@ -15,14 +15,44 @@ export const config = {
   },
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  
   try {
-    const petugas = await prisma.petugas.findMany()
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search') || ''
+
+    const totalPetugas = await prisma.petugas.count({
+      where: {
+        OR: [
+          { nip: { contains: search, mode: 'insensitive' } },
+          { nama: { contains: search, mode: 'insensitive' } },
+          { jabatan: { contains: search, mode: 'insensitive' } }
+        ]
+      }
+    });
+
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = parseInt(searchParams.get('limit') || totalPetugas.toString(), 10);
+    const offset = (page - 1) * limit;
+
+    const petugas = await prisma.petugas.findMany({
+      where: {
+        OR: [
+          { nip: { contains: search, mode: 'insensitive' } },
+          { nama: { contains: search, mode: 'insensitive' } },
+          { jabatan: { contains: search, mode: 'insensitive' } }
+        ]
+      },
+      skip: offset,
+      take: limit
+    })
+    
     return NextResponse.json({
       status: 200,
       success: true,
       message: "Data petugas ditemukan",
-      data: petugas
+      data: petugas,
+      dataLength: totalPetugas
     }, { status: 200 })
   } catch (error) {
     console.error(error)
@@ -36,6 +66,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  
   try {
     const uploadDir = path.join(process.cwd(), 'public/uploads');
 

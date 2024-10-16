@@ -3,7 +3,8 @@ import prisma from '../../../../lib/prisma';
 import { z } from 'zod';
 import { suratBebasSchema } from '@/lib/schema';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params;
 
   try {
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
   const { id } = params
   const body = await request.json()
   const data = suratBebasSchema.parse(body)
@@ -53,6 +55,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }, { status: 400 })
   }
 
+  const tanggalS = data.tanggal ? new Date(data.tanggal) : new Date();
+
   try {
     const suratBebasUpdate = await prisma.suratBebas.update({
       where: { id: Number(id) },
@@ -61,6 +65,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         nama: data.nama,
         nim: data.nim,
         judul: data.judul,
+        tanggal: tanggalS,
       },
     });
     return NextResponse.json({
@@ -86,6 +91,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params
 
   try {

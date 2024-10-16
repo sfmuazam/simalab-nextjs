@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { addDays } from 'date-fns'
 import { suratPeminjamanSchema } from '@/lib/schema';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params;
 
   try {
@@ -38,21 +39,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
   const { id } = params
   const body = await request.json()
   const data = suratPeminjamanSchema.parse(body)
-
-  const existingSuratPeminjaman = await prisma.suratPeminjaman.findUnique({
-    where: { no_surat: data.no_surat }
-  })
-
-  if (existingSuratPeminjaman && existingSuratPeminjaman.id != Number(id)) {
-    return NextResponse.json({
-      status: 400,
-      success: false,
-      message: "No surat sudah terdaftar",
-    }, { status: 400 })
-  }
 
   try {
     const tanggalPinjam = data.tanggal_pinjam ? new Date(data.tanggal_pinjam) : new Date();
@@ -62,19 +52,14 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const suratPeminjamanUpdate = await prisma.suratPeminjaman.update({
       where: {id: Number(id)},
       data: {
-        no_surat: data.no_surat,
         nama: data.nama,
         nim: data.nim,
         no_hp: data.no_hp,
+        keperluan: data.keperluan,
         tanggal_pinjam: tanggalPinjam,
         durasi: data.durasi || 7,
         tanggal_kembali: tanggalKembali, 
-        alat: {
-          create: data.alat.map((item) => ({
-            nama: item.nama,
-            jumlah: item.jumlah,
-          })),
-        }
+        alat: data.alat
       },
     });
     return NextResponse.json({
@@ -100,6 +85,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params
 
   try {

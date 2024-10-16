@@ -3,26 +3,31 @@ import prisma from '../../../../../lib/prisma';
 import generateSuratWord from '@/lib/generate-surat'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params
+  
+  const { id } = params;
   const suratBebas = await prisma.suratBebas.findUnique({
     where: { id: Number(id) }
-  })
+  });
 
-  if(!suratBebas) {
+  if (!suratBebas) {
     return NextResponse.json({
       status: 404,
       success: false,
       message: "Surat bebas lab tidak ditemukan"
-    }, {status: 404})
+    }, { status: 404 });
   }
 
-  try{
+  // Format date to Indonesian
+  const formattedDate = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(suratBebas.tanggal));
+
+  try {
     const wordBuffer = await generateSuratWord('bebas lab', {
       no_surat: suratBebas.no_surat,
       nama: suratBebas.nama,
       nim: suratBebas.nim,
       judul: suratBebas.judul,
-    })
+      tanggal: formattedDate 
+    });
 
     return new NextResponse(wordBuffer, {
       status: 200,
@@ -32,7 +37,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       },
     });
 
-  } catch (error){
+  } catch (error) {
     return NextResponse.json({
       status: 500,
       success: false,
@@ -40,6 +45,4 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       errors: error
     }, { status: 500 });
   }
-
 }
-

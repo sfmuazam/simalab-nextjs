@@ -15,6 +15,7 @@ export const config = {
 };
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params
 
   try {
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params;
 
   try {
@@ -158,6 +160,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params;
 
   try {

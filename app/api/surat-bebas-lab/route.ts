@@ -3,14 +3,58 @@ import prisma from '../../../lib/prisma'
 import { z } from 'zod'
 import { suratBebasSchema } from '@/lib/schema'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  
   try {
-    const suratBebas = await prisma.suratBebas.findMany()
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search') || ''
+    const startDate = searchParams.get('startDate') || ''
+    const endDate = searchParams.get('endDate') || ''
+
+    const startFilter = startDate ? new Date(startDate) : undefined;
+    const endFilter = endDate ? new Date(endDate) : undefined;
+
+    const totalSuratBebas = await prisma.suratBebas.count({
+      where: {
+        OR: [
+          { nama: { contains: search, mode: 'insensitive' } },
+          { nim: { contains: search, mode: 'insensitive' } },
+          { judul: { contains: search, mode: 'insensitive' } },
+          { no_surat: { contains: search, mode: 'insensitive' } }
+        ],
+        AND: [
+           { tanggal: { gte: startFilter } },
+           { tanggal: { lte: endFilter } }
+        ].filter(Boolean) 
+      }
+    });
+
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = parseInt(searchParams.get('limit') || totalSuratBebas.toString(), 10);
+    const offset = (page - 1) * limit;
+
+    const suratBebas = await prisma.suratBebas.findMany({
+      where: {
+        OR: [
+          { nama: { contains: search, mode: 'insensitive' } },
+          { nim: { contains: search, mode: 'insensitive' } },
+          { judul: { contains: search, mode: 'insensitive' } },
+          { no_surat: { contains: search, mode: 'insensitive' } }
+        ],
+        AND: [
+           { tanggal: { gte: startFilter } },
+           { tanggal: { lte: endFilter } }
+        ].filter(Boolean) 
+      },
+      skip: offset,
+      take: limit
+    })
     return NextResponse.json({
       status: 200,
       success: true,
       message: "Surat bebas lab ditemukan",
-      data: suratBebas
+      data: suratBebas,
+      dataLength: totalSuratBebas
     }, { status: 200 })
   } catch (error) {
     console.error(error)
@@ -24,6 +68,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  
   try {
     const body = await request.json();
     const data = suratBebasSchema.parse(body);
@@ -39,6 +84,7 @@ export async function POST(request: NextRequest) {
         message: "No surat sudah terdaftar",
       }, { status: 400 });
     }
+  const tanggalS = data.tanggal ? new Date(data.tanggal) : new Date();
 
     const suratBebasBaru = await prisma.suratBebas.create({
       data: {
@@ -46,6 +92,7 @@ export async function POST(request: NextRequest) {
         nama: data.nama,
         nim: data.nim,
         judul: data.judul,
+        tanggal: tanggalS
       },
     });
 

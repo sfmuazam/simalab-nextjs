@@ -3,14 +3,50 @@ import prisma from '../../../lib/prisma'
 import { z } from 'zod'
 import { laboratoriumSchema } from '@/lib/schema'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+
   try {
-    const laboratorium = await prisma.laboratorium.findMany()
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search') || ''
+
+    const isNumeric = !isNaN(Number(search));
+
+    const totalLaboratorium = await prisma.laboratorium.count({
+      where: {
+        OR: [
+          { nama: { contains: search, mode: 'insensitive' } },
+          { penanggung_jawab: { contains: search, mode: 'insensitive' } },
+          ...(isNumeric
+            ? [{ kapasitas: { equals: Number(search) } }]
+            : [])
+        ]
+      }
+    });
+    
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const limit = parseInt(searchParams.get('limit') || totalLaboratorium.toString(), 10);
+    const offset = (page - 1) * limit;
+
+    const laboratorium = await prisma.laboratorium.findMany({
+      where: {
+        OR: [
+          { nama: { contains: search, mode: 'insensitive' } },
+          { penanggung_jawab: { contains: search, mode: 'insensitive' } },
+          ...(isNumeric
+            ? [{ kapasitas: { equals: Number(search) } }]
+            : [])
+        ]
+      },
+      skip: offset,
+      take: limit
+    })
+
     return NextResponse.json({
       status: 200,
       success: true,
       message: "Data laboratorium ditemukan",
-      data: laboratorium
+      data: laboratorium,
+      dataLength: totalLaboratorium
     }, { status: 200 })
   } catch (error) {
     console.error(error)
@@ -24,6 +60,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  
   try {
     const body = await request.json()
 

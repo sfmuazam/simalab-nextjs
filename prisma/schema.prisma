@@ -21,8 +21,19 @@ enum Penggunaan {
   SUDAH_DIGUNAKAN
 }
 
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  nama     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user")
+}
+
 model Petugas {
-  id             Int          @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   nip       String   @unique @db.VarChar(255)
   nama      String   @db.VarChar(255)
   jabatan   String   @db.VarChar(255)
@@ -46,11 +57,12 @@ model Laboratorium {
 }
 
 model SuratBebas {
-  id             Int          @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   no_surat  String   @unique @db.VarChar(255)
   nama      String   @db.VarChar(255)
   nim       String   @db.VarChar(255)
   judul     String   @db.Text
+  tanggal   DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -58,27 +70,29 @@ model SuratBebas {
 }
 
 model SuratPenelitian {
-  id             Int          @id @default(autoincrement())
-  no_surat  String   @unique @db.VarChar(255)
-  nama      String   @db.VarChar(255)
-  nim       String   @db.VarChar(255)
-  judul     String   @db.Text
-  dospem    Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  no_surat    String   @unique @db.VarChar(255)
+  nama        String   @db.VarChar(255)
+  nim         String   @db.VarChar(255)
+  judul       String   @db.Text
+  nama_dospem String   @db.VarChar(255)
+  nip_dospem  String   @db.VarChar(255)
+  tanggal     DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("surat_penelitian")
 }
 
 model SuratPeminjaman {
-  id             Int          @id @default(autoincrement())
-  no_surat        String    @unique @db.VarChar(255)
-  nama            String    @db.VarChar(255)
-  nim             String    @db.VarChar(255)
-  no_hp           String    @db.VarChar(20)
-  tanggal_pinjam  DateTime  @default(now())
-  durasi          Int       @default(7) @db.Integer
-  tanggal_kembali DateTime?
+  id              Int      @id @default(autoincrement())
+  nama            String   @db.VarChar(255)
+  nim             String   @db.VarChar(255)
+  keperluan       String   @db.VarChar(255)
+  no_hp           String   @db.VarChar(20)
+  tanggal_pinjam  DateTime @default(now())
+  durasi          Int      @default(7) @db.Integer
+  tanggal_kembali DateTime
   alat            Json
 
   createdAt DateTime @default(now())
@@ -91,14 +105,14 @@ model Inventaris {
   id             Int          @id @default(autoincrement())
   laboratoriumId Int
   nama           String       @db.VarChar(255)
-  merk           String       @db.VarChar(255)
-  spesifikasi    String       @db.Text
-  jumlah         Int          @db.Integer
-  fungsi         String       @db.VarChar(255)
-  sumber         String       @db.VarChar(255)
-  tahun          Int          @db.Integer
-  kondisi        Kondisi
-  penggunaan     Penggunaan
+  merk           String?      @db.VarChar(255)
+  spesifikasi    String?      @db.Text
+  jumlah         Int?         @default(1) @db.Integer
+  fungsi         String?      @db.VarChar(255)
+  sumber         String?      @db.VarChar(255)
+  tahun          Int?         @db.Integer
+  kondisi        Kondisi?     @default(BERFUNGSI)
+  penggunaan     Penggunaan?  @default(BELUM_DIGUNAKAN)
   keterangan     String?      @db.Text
   Laboratorium   Laboratorium @relation(fields: [laboratoriumId], references: [id])
 

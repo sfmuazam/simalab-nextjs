@@ -3,6 +3,7 @@ import prisma from '../../../../../lib/prisma';
 import generateSuratWord from '@/lib/generate-surat'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  
   const { id } = params
   const suratPenelitian = await prisma.suratPenelitian.findUnique({
     where: { id: Number(id) }
@@ -16,13 +17,17 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }, {status: 404})
   }
 
+  const formattedDate = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(suratPenelitian.tanggal));
+  
   try{
     const wordBuffer = await generateSuratWord('penelitian', {
       no_surat: suratPenelitian.no_surat,
       nama: suratPenelitian.nama,
       nim: suratPenelitian.nim,
       judul: suratPenelitian.judul,
-      dospem: suratPenelitian.dospem
+      nama_dospem: suratPenelitian.nama_dospem, 
+      nip_dospem: suratPenelitian.nip_dospem,  
+      tanggal: formattedDate // Use formatted date here
     })
 
     return new NextResponse(wordBuffer, {
